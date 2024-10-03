@@ -7,13 +7,18 @@ competition Competition;
 brain Brain;
 controller Controller = controller();
 
-motor intake = motor(PORT1, false);
-motor leftFront = motor(PORT2, false);
-motor leftMiddle = motor(PORT3, false);
-motor leftBack = motor(PORT4, false);
-motor rightFront = motor(PORT2, true);
-motor rightMiddle = motor(PORT3, true);
-motor rightBack = motor(PORT4, true);
+motor intake = motor(PORT11, false);
+//Initializing drivetrain motors
+motor rightFront = motor(PORT12, true);
+motor rightMiddle = motor(PORT13, true);
+motor rightBack = motor(PORT14, true);
+motor leftFront = motor(PORT15, false);
+motor leftMiddle = motor(PORT16, false);
+motor leftBack = motor(PORT17, false);
+//Motor groups
+motor_group leftDriveSmart = motor_group(leftFront, leftMiddle, leftBack);
+motor_group rightDriveSmart = motor_group(rightFront, rightMiddle, rightBack);
+
 //These values are in inches
 float wheelTravel = 2.75 * M_PI;
 float trackWidth = 18;
@@ -23,12 +28,7 @@ bool FineControl = false;
 //Forgot if it's driven to driver or the other way around
 float externalGearRatio = 1;
 
-motor_group leftDriveSmart = motor_group(leftFront, leftMiddle, leftBack);
-motor_group rightDriveSmart = motor_group(rightFront, rightMiddle, rightBack);
-
 drivetrain Drivetrain = drivetrain(leftDriveSmart, rightDriveSmart, wheelTravel, trackWidth, wheelBase, inches, externalGearRatio);
-
-
 
 digital_out MobileGoalSolenoid = digital_out(Brain.ThreeWirePort.A);
 //Change controls here
@@ -62,7 +62,6 @@ void usercontrol(void) {
       if(MobileGoalSolenoidIsActive)
       {
         MobileGoalSolenoid.set(false);
-
       } else 
       {
         MobileGoalSolenoid.set(true);
