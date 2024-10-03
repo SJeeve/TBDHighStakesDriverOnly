@@ -4,6 +4,8 @@
 using namespace vex;
 
 competition Competition;
+brain Brain;
+controller Controller = controller();
 
 motor intake = motor(PORT1, false);
 motor leftFront = motor(PORT2, false);
@@ -26,11 +28,16 @@ motor_group rightDriveSmart = motor_group(rightFront, rightMiddle, rightBack);
 
 drivetrain Drivetrain = drivetrain(leftDriveSmart, rightDriveSmart, wheelTravel, trackWidth, wheelBase, inches, externalGearRatio);
 
-controller Controller = controller();
+
+
+digital_out MobileGoalSolenoid = digital_out(Brain.ThreeWirePort.A);
 //Change controls here
 const vex::controller::button SpinIntakeForward = Controller.ButtonR1; 
 const vex::controller::button SpinIntakeBackward = Controller.ButtonL1;
 const vex::controller::button ActivateFineControl = Controller.ButtonX;
+const vex::controller::button ActivateMobileGoalSolenoid = Controller.ButtonA;
+
+bool MobileGoalSolenoidIsActive = false;
 void pre_auton(void) {
   // Initializing Robot Configuration. DO NOT REMOVE!
   vexcodeInit();
@@ -44,14 +51,24 @@ void autonomous(void) {
 }
 
 void usercontrol(void) {
-  // User control code here, inside the loop
   leftDriveSmart.spin(forward);
   rightDriveSmart.spin(forward);
   intake.spin(forward);
   while (1) {
     float leftDrive = Controller.Axis4.position() - Controller.Axis1.position();
     float rightDrive = Controller.Axis4.position() + Controller.Axis1.position();
+    if(ActivateMobileGoalSolenoid.pressing())
+    {
+      if(MobileGoalSolenoidIsActive)
+      {
+        MobileGoalSolenoid.set(false);
 
+      } else 
+      {
+        MobileGoalSolenoid.set(true);
+      }
+      MobileGoalSolenoidIsActive = !MobileGoalSolenoidIsActive;
+    }
     //If we decide to keep this I would want an LED so it's easier to tell when it's on or off
     if(ActivateFineControl.pressing())
     {
