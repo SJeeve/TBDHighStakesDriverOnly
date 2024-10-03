@@ -39,11 +39,7 @@ const vex::controller::button ActivateMobileGoalSolenoid = Controller.ButtonA;
 
 bool MobileGoalSolenoidIsActive = false;
 void pre_auton(void) {
-  // Initializing Robot Configuration. DO NOT REMOVE!
   vexcodeInit();
-
-  // All activities that occur before the competition starts
-  // Example: clearing encoders, setting servo positions, ...
 }
 
 void autonomous(void) {
