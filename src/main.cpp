@@ -1,23 +1,23 @@
 
 #include "vex.h"
-
 using namespace vex;
 
-competition Competition;
+vex::competition Competition;
 brain Brain;
-controller Controller = controller();
+vex::controller Controller = vex::controller();
 
-motor intake = motor(PORT11, false);
-//Initializing drivetrain motors
-motor rightFront = motor(PORT12, true);
-motor rightMiddle = motor(PORT13, true);
-motor rightBack = motor(PORT14, true);
-motor leftFront = motor(PORT15, false);
-motor leftMiddle = motor(PORT16, false);
-motor leftBack = motor(PORT17, false);
-//Motor groups
-motor_group leftDriveSmart = motor_group(leftFront, leftMiddle, leftBack);
-motor_group rightDriveSmart = motor_group(rightFront, rightMiddle, rightBack);
+vex::motor conveyorBelt = vex::motor(PORT4, false);
+vex::motor intake = vex::motor(PORT3, false);
+//Initializing drivetrain vex::motors
+vex::motor rightFront = vex::motor(PORT12, true);
+vex::motor rightMiddle = vex::motor(PORT13, true);
+vex::motor rightBack = vex::motor(PORT14, true);
+vex::motor leftFront = vex::motor(PORT15, false);
+vex::motor leftMiddle = vex::motor(PORT16, false);
+vex::motor leftBack = vex::motor(PORT17, false);
+//vex::motor groups
+vex::motor_group leftDriveSmart = vex::motor_group(leftFront, leftMiddle, leftBack);
+vex::motor_group rightDriveSmart = vex::motor_group(rightFront, rightMiddle, rightBack);
 
 //These values are in inches
 float wheelTravel = 2.75 * M_PI;
@@ -28,16 +28,19 @@ bool FineControl = false;
 //Forgot if it's driven to driver or the other way around
 float externalGearRatio = 1;
 
-drivetrain Drivetrain = drivetrain(leftDriveSmart, rightDriveSmart, wheelTravel, trackWidth, wheelBase, inches, externalGearRatio);
+vex::drivetrain Drivetrain = vex::drivetrain(leftDriveSmart, rightDriveSmart, wheelTravel, trackWidth, wheelBase, inches, externalGearRatio);
 
-digital_out MobileGoalSolenoid = digital_out(Brain.ThreeWirePort.A);
+vex::digital_out MobileGoalSolenoid = vex::digital_out(Brain.ThreeWirePort.A);
+vex::digital_out FineControlLED = vex::digital_out(Brain.ThreeWirePort.B);
 //Change controls here
+
 const vex::controller::button SpinIntakeForward = Controller.ButtonR1; 
 const vex::controller::button SpinIntakeBackward = Controller.ButtonL1;
 const vex::controller::button ActivateFineControl = Controller.ButtonX;
 const vex::controller::button ActivateMobileGoalSolenoid = Controller.ButtonA;
 
 bool MobileGoalSolenoidIsActive = false;
+
 void pre_auton(void) {
   vexcodeInit();
 }
@@ -51,23 +54,18 @@ void usercontrol(void) {
   rightDriveSmart.spin(forward);
   intake.spin(forward);
   while (1) {
-    float leftDrive = Controller.Axis4.position() - Controller.Axis1.position();
-    float rightDrive = Controller.Axis4.position() + Controller.Axis1.position();
+    float leftDrive = -1 * Controller.Axis3.position() - Controller.Axis1.position();
+    float rightDrive = -1 * Controller.Axis3.position() + Controller.Axis1.position();
     if(ActivateMobileGoalSolenoid.pressing())
     {
-      if(MobileGoalSolenoidIsActive)
-      {
-        MobileGoalSolenoid.set(false);
-      } else 
-      {
-        MobileGoalSolenoid.set(true);
-      }
       MobileGoalSolenoidIsActive = !MobileGoalSolenoidIsActive;
+      MobileGoalSolenoid.set(MobileGoalSolenoidIsActive);
     }
     //If we decide to keep this I would want an LED so it's easier to tell when it's on or off
     if(ActivateFineControl.pressing())
     {
       FineControl = !FineControl;
+      FineControlLED.set(FineControl);
     }
 
     if(FineControl){
@@ -84,13 +82,18 @@ void usercontrol(void) {
     if(SpinIntakeForward.pressing())
     {
       intake.spin(forward, 12, volt);
+      conveyorBelt.spin(forward, -12, volt);
     } else if(SpinIntakeBackward.pressing())
     {
       intake.spin(forward, -12, volt);
+      conveyorBelt.spin(forward, 12, volt);
     } else {
       intake.stop();
+      conveyorBelt.stop();
     }
-    wait(20, msec);  
+    while(ActivateMobileGoalSolenoid.pressing())
+      vex::wait(20, msec);
+    vex::wait(20, msec);  
   }
 }
 
